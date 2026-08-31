@@ -1,3 +1,4 @@
-# xxxx Committee Changelog
+The changelogs of constituent packages:
 
-All major changes to this project will be documented in this file.
+### `cardano-keys`
+[./cardano-keys/CHANGELOG.md](./cardano-keys/CHANGELOG.md)
