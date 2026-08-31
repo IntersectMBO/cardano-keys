@@ -1,0 +1,166 @@
+name: Haskell CI (WASM)
+
+on:
+  merge_group:
+  pull_request:
+  push:
+    # we need this to populate cache for `master` branch to make it available to the child branches, see
+    # https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
+    branches:
+      - master
+  # GH caches are removed when not accessed within 7 days - this schedule runs the job every 6 days making
+  # sure that we always have some caches on master
+  schedule:
+    - cron: '0 0 */6 * *'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{ matrix.sys.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        sys:
+          - { os: ubuntu-latest, shell: bash }
+
+    defaults:
+        run:
+          shell: ${{ matrix.sys.shell }}
+
+    env:
+      # Modify this value to "invalidate" the cabal cache.
+      CABAL_CACHE_VERSION: "2026-08-31"
+
+    concurrency:
+      group: >
+        wasm
+        a+${{ github.event_name }}
+        b+${{ github.workflow_ref }}
+        c+${{ github.job }}
+        f+${{ matrix.sys.os }}
+        g+${{ (startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.run_id) || github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    steps:
+    - name: Concurrency group
+      run: >
+        echo
+        wasm
+        a+${{ github.event_name }}
+        b+${{ github.workflow_ref }}
+        c+${{ github.job }}
+        f+${{ matrix.sys.os }}
+        g+${{ (startsWith(github.ref, 'refs/heads/gh-readonly-queue/') && github.run_id) || github.event.pull_request.number || github.ref }}
+
+    - uses: actions/checkout@v6
+
+    - uses: cachix/install-nix-action@v31
+      with:
+        extra_nix_config: |
+          accept-flake-config = true
+
+    # ghc-wasm-meta is the only flake input hosted on gitlab.haskell.org, whose
+    # availability is flaky, and an outage breaks every nix invocation below.
+    # Pre-fetch that input, falling back to a byte-identical mirror on
+    # archive.org. The narHash taken from flake.lock guarantees that whichever
+    # source responds yields exactly the locked content, and the nix
+    # invocations below then resolve the input locally without re-downloading.
+    - name: Fetch ghc-wasm-meta flake input (with archive.org mirror fallback)
+      run: |
+        rev=$(jq -r '.nodes["ghc-wasm-meta"].locked.rev' flake.lock)
+        narHash=$(jq -r '.nodes["ghc-wasm-meta"].locked.narHash' flake.lock)
+        hashQuery=${narHash//=/%3D}
+        if nix flake prefetch --option connect-timeout 60 --option download-attempts 2 \
+            "gitlab:haskell-wasm/ghc-wasm-meta/${rev}?host=gitlab.haskell.org&narHash=${hashQuery}"; then
+          echo "Fetched ghc-wasm-meta@${rev} from gitlab.haskell.org"
+        else
+          echo "::warning::gitlab.haskell.org is unavailable, falling back to the archive.org mirror of ghc-wasm-meta@${rev}"
+          nix flake prefetch \
+            "tarball+https://archive.org/download/ghc-wasm-meta-${rev}/ghc-wasm-meta-${rev}-${rev}.tar.gz?narHash=${hashQuery}" || {
+            echo "::error::The archive.org mirror does not serve ghc-wasm-meta@${rev}. If the flake input was re-pinned, upload the new GitLab archive tarball to an archive.org item named ghc-wasm-meta-${rev} (keeping GitLab's file name), or wait for gitlab.haskell.org to recover."
+            exit 1
+          }
+        fi
+
+    - uses: rrbutani/use-nix-shell-action@v1
+      with:
+        devShell: .#wasm
+
+    - name: Cabal update
+      run: |
+        wasm32-wasi-cabal update
+
+    # A dry run `build all` operation does *NOT* download anything, it just looks at the package
+    # indices to generate an install plan.
+    - name: Build dry run
+      run: |
+        wasm32-wasi-cabal build all --dry-run
+
+    # From the install plan we generate a dependency list.
+    - name: Record dependencies
+      id: record-deps
+      run: |
+        cat dist-newstyle/cache/plan.json | jq -r '."install-plan"[] | select(.style != "local") | .id' | sort | uniq > dependencies.txt
+
+    - name: Store the compiler version and the cabal store path used in the cache key
+      run: |
+        cat <<EOF >> $GITHUB_ENV
+        GHC=$(wasm32-wasi-ghc --numeric-version)
+        STORE=$(wasm32-wasi-cabal path --store | tail -n 1)
+        EOF
+
+    # From the dependency list we restore the cached dependencies.
+    # We use the hash of `dependencies.txt` as part of the cache key because that will be stable
+    # until the `index-state` values in the `cabal.project` file changes.
+    - name: Restore cached dependencies
+      uses: actions/cache/restore@v4
+      id: cache
+      with:
+        path: |
+          ${{ env.STORE }}
+          dist-newstyle
+        key:
+          wasm-cache-${{ env.CABAL_CACHE_VERSION }}-${{ runner.os }}-${{ env.GHC }}-${{ hashFiles('dependencies.txt') }}
+        restore-keys: |
+          wasm-cache-${{ env.CABAL_CACHE_VERSION }}-${{ runner.os }}-${{ env.GHC }}-
+
+    # Now we install the dependencies. If the cache was found and restored in the previous step,
+    # this should be a no-op, but if the cache key was not found we need to build stuff so we can
+    # cache it for the next step.
+    - name: Install dependencies
+      run: |
+        wasm32-wasi-cabal build all --only-dependencies
+
+    # Always store the cabal cache.
+    - name: Cache Cabal store
+      uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: |
+          ${{ env.STORE }}
+          dist-newstyle
+        key:
+          ${{ steps.cache.outputs.cache-primary-key }}
+
+    # Now we build.
+    - name: Build all
+      run: |
+        wasm32-wasi-cabal build all
+
+  wasm-builds-complete:
+    needs: [build]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check if any previous job failed
+      run: |
+        if [[ "${{ needs.build.result }}" == "failure" ]]; then
+          # this ignores skipped dependencies
+          echo 'Required jobs failed to build.'
+          exit 1
+        else
+          echo 'Build complete'
+        fi
