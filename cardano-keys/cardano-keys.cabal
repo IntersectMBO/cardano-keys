@@ -1,0 +1,59 @@
+cabal-version: 3.8
+name: cardano-keys
+version: 11.0.0.0
+synopsis: Cardano key types and their serialisation
+description:
+  This library holds the Cardano key types and the bech32 serialisation
+  independently of cardano-api so that projects can use it without having
+  to depend on the full cardano stack.
+
+category: Cardano
+copyright: 2020-2026 Input Output Global Inc (IOG).
+author: IOHK
+maintainer: operations@iohk.io
+license: Apache-2.0
+license-files:
+  LICENSE
+  NOTICE
+
+build-type: Simple
+extra-doc-files:
+  CHANGELOG.md
+  README.md
+
+common project-config
+  default-language: Haskell2010
+  default-extensions:
+    ImportQualifiedPost
+    OverloadedStrings
+
+  build-depends: base >=4.14 && <4.23
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wno-unticked-promoted-constructors
+    -Wpartial-fields
+    -Wredundant-constraints
+    -Wunused-packages
+
+library
+  import: project-config
+  hs-source-dirs: src
+  exposed-modules: Cardano.Keys
+  build-depends:
+    bech32 >=1.1.0,
+    bytestring,
+    cardano-crypto-class ^>=2.5,
+    text,
+
+test-suite cardano-keys-test
+  import: project-config
+  hs-source-dirs: test
+  main-is: cardano-keys-test.hs
+  type: exitcode-stdio-1.0
+  build-depends:
+    bytestring,
+    cardano-keys,
+    text,
