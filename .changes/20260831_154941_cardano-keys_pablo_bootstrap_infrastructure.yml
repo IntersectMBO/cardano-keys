@@ -1,0 +1,9 @@
+project: cardano-keys
+
+pr: 1
+
+kind:
+  - maintenance
+
+description: |
+  Bootstrap the repository with its infrastructure (formatting, lint, herald, nix flake, CI, docs) and a placeholder `cardano-keys` package at version 11.0.0.0.
