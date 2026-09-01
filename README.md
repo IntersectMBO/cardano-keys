@@ -119,6 +119,7 @@ Without Nix, you also need the C libraries from [Requirements](#requirements).
 
 See the [Contributing guide](CONTRIBUTING.md) for how to contribute to this project.
 
-<!-- TODO: add the ci.iog.io Hydra badges once an IntersectMBO-cardano-keys jobset exists -->
+[![x86\_64-linux](https://img.shields.io/endpoint?url=https://ci.iog.io/job/IntersectMBO-cardano-keys/master/x86_64-linux.required/shield&style=flat-square&label=x86_64-linux)](https://ci.iog.io/job/IntersectMBO-cardano-keys/master/x86_64-linux.required)
+[![aarch64-darwin](https://img.shields.io/endpoint?url=https://ci.iog.io/job/IntersectMBO-cardano-keys/master/aarch64-darwin.required/shield&style=flat-square&label=aarch64-darwin)](https://ci.iog.io/job/IntersectMBO-cardano-keys/master/aarch64-darwin.required)
 [![GHA Build](https://img.shields.io/github/actions/workflow/status/intersectmbo/cardano-keys/haskell.yml?branch=master&label=GHA%20Build&style=flat-square)](https://github.com/IntersectMBO/cardano-keys/actions/workflows/haskell.yml?query=branch%3Amaster)
 [![Haddock](https://img.shields.io/github/actions/workflow/status/intersectmbo/cardano-keys/github-page.yml?branch=master&label=Haddocks&style=flat-square)](https://github.com/IntersectMBO/cardano-keys/actions/workflows/github-page.yml?query=branch%3Amaster)
