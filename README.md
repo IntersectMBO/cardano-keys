@@ -58,8 +58,9 @@ Build notes:
   CHaP is already configured in this repo's `cabal.project`.
 - The project builds with `-Werror`, so every warning is an error.
   Stick to the GHC versions listed above.
-- The flake provides further development shells: `nix develop .#ghc967`, `nix develop .#ghc914`
-  (the haddock compiler), `nix develop .#profiling` and `nix develop .#wasm`.
+- The flake provides further development shells: `nix develop .#profiling`, `nix develop .#wasm`,
+  and, on x86_64-linux only, `nix develop .#ghc967` and `nix develop .#ghc914` (the haddock
+  compiler).
 
 ## Using the library in your project
 

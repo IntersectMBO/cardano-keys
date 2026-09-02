@@ -190,25 +190,30 @@
               packages.cardano-keys = {
                 configureFlags = ["--ghc-option=-Werror"];
               };
+              # basement's hsc2hs output trips gcc >= 14's int-conversion error
+              # on the mingw cross toolchain; demote it back to a warning.
+              packages.basement.components.library.configureFlags = [
+                "--hsc2hs-option=--cflag=-Wno-int-conversion"
+              ];
             })
           ];
         });
         # ... and construct a flake from the cabal project
-        flake = cabalProject.flake {
-          # build/test the other supported compilers on every system: CI's
-          # github-page workflow uses `.#ghc914`, and developers are not all
-          # on x86_64-linux.
-          variants = let
-            # on windows we're using defaultCompiler only - stableCompiler makes ghc-iserv flaky
-            osDependentStableCompiler =
-              if nixpkgs.stdenv.hostPlatform.isWindows
-              then defaultCompiler
-              else stableCompiler;
-          in
-            lib.genAttrs [osDependentStableCompiler crossCompilerVersion haddockCompiler] (compiler-nix-name: {
-              inherit compiler-nix-name;
-            });
-        };
+        flake = cabalProject.flake (
+          lib.optionalAttrs (system == "x86_64-linux") {
+            # on linux, build/test the other supported compilers; only x86_64-linux
+            variants = let
+              # on windows we're using defaultCompiler only - stableCompiler makes ghc-iserv flaky
+              osDependentStableCompiler =
+                if nixpkgs.stdenv.hostPlatform.isWindows
+                then defaultCompiler
+                else stableCompiler;
+            in
+              lib.genAttrs [osDependentStableCompiler crossCompilerVersion haddockCompiler] (compiler-nix-name: {
+                inherit compiler-nix-name;
+              });
+          }
+        );
         # wasm shell
         wasmShell = let
           wasm-pkgs = inputs.wasm-nixpkgs.legacyPackages.${system};
