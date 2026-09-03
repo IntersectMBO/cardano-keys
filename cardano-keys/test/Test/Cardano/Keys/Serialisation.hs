@@ -1,17 +1,22 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Tests for the serialisation of the key catalogue.
 --
 -- Everything here is pure: the envelope @type@ strings every 'HasTextEnvelope'
--- instance writes, the text the document of 'renderTextEnvelopeError' lays out,
--- and a CBOR round-trip of a Byron signing key made from a fixed seed.
+-- instance writes, the several type strings one instance can accept, the text
+-- the document of 'renderTextEnvelopeError' lays out, and a CBOR round-trip of
+-- a Byron signing key made from a fixed seed.
 module Test.Cardano.Keys.Serialisation (tests) where
 
 import Cardano.Keys.Byron (AsType (AsByronKey), ByronKey, ByronKeyLegacy)
 import Cardano.Keys.Class (Key (..))
-import Cardano.Keys.HasTypeProxy (asType)
+import Cardano.Keys.HasTypeProxy (HasTypeProxy (..), asType)
 import Cardano.Keys.Leios (BlsKey, BlsPossessionProof)
 import Cardano.Keys.OperationalCertificate
   ( OperationalCertificate
@@ -19,13 +24,22 @@ import Cardano.Keys.OperationalCertificate
   )
 import Cardano.Keys.Praos (KesKey, VrfKey)
 import Cardano.Keys.Pretty (docToText)
-import Cardano.Keys.Serialise.Cbor (deserialiseFromCBOR, serialiseToCBOR)
+import Cardano.Keys.Serialise.Cbor
+  ( FromCBOR
+  , SerialiseAsCBOR
+  , ToCBOR
+  , deserialiseFromCBOR
+  , serialiseToCBOR
+  )
 import Cardano.Keys.Serialise.TextEnvelope
-  ( HasTextEnvelope
+  ( HasTextEnvelope (..)
+  , TextEnvelope (..)
   , TextEnvelopeDescr (..)
   , TextEnvelopeError (..)
   , TextEnvelopeType (..)
+  , deserialiseFromTextEnvelope
   , renderTextEnvelopeError
+  , serialiseToTextEnvelope
   , textEnvelopeType
   )
 import Cardano.Keys.Shelley
@@ -34,8 +48,10 @@ import Cardano.Binary (DecoderError (..))
 import Cardano.Crypto.Seed (mkSeedFromBytes)
 
 import Data.ByteString qualified as BS
+import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Word (Word8)
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, assertFailure, testCase)
@@ -45,6 +61,7 @@ tests =
   testGroup
     "keys"
     [ envelopeTypeTests
+    , envelopeAcceptanceTests
     , renderTextEnvelopeErrorTests
     , byronKeyCborTests
     ]
@@ -148,6 +165,58 @@ envelopeTypeTable =
 
 ty :: forall a. HasTextEnvelope a => TextEnvelopeType
 ty = textEnvelopeType (asType @a)
+
+--
+-- Several accepted envelope types
+--
+
+-- | A type that accepts two envelope @type@ strings, to exercise the mechanism
+-- that no shipped instance needs yet: every instance of the catalogue above
+-- still accepts exactly the one string it writes.
+newtype Legacy = Legacy Word8
+  deriving stock (Eq, Show)
+  deriving newtype (ToCBOR, FromCBOR)
+
+instance HasTypeProxy Legacy where
+  data AsType Legacy = AsLegacy
+  proxyToAsType _ = AsLegacy
+
+instance SerialiseAsCBOR Legacy
+
+instance HasTextEnvelope Legacy where
+  textEnvelopeTypes _ =
+    TextEnvelopeType "LegacyCurrentSpelling" :| [TextEnvelopeType "LegacyOldSpelling"]
+
+-- | The head of 'textEnvelopeTypes' is written; the whole list is accepted.
+envelopeAcceptanceTests :: TestTree
+envelopeAcceptanceTests =
+  testGroup
+    "several accepted envelope types"
+    [ testCase "serialising writes the head of the list" $
+        assertEqual "written type" (TextEnvelopeType "LegacyCurrentSpelling") (teType envelope)
+    , testCase "deserialising accepts the head" $
+        assertEqual "decoded" (Right (Legacy 7)) (decode envelope)
+    , testCase "deserialising accepts a legacy spelling" $
+        assertEqual
+          "decoded"
+          (Right (Legacy 7))
+          (decode envelope{teType = TextEnvelopeType "LegacyOldSpelling"})
+    , testCase "deserialising reports the whole accepted list" $
+        assertEqual
+          "error"
+          ( Left
+              ( TextEnvelopeTypeError
+                  [TextEnvelopeType "LegacyCurrentSpelling", TextEnvelopeType "LegacyOldSpelling"]
+                  (TextEnvelopeType "LegacyUnknownSpelling")
+              )
+          )
+          (decode envelope{teType = TextEnvelopeType "LegacyUnknownSpelling"})
+    ]
+ where
+  envelope = serialiseToTextEnvelope Nothing (Legacy 7)
+
+  decode :: TextEnvelope -> Either TextEnvelopeError Legacy
+  decode = deserialiseFromTextEnvelope
 
 --
 -- Error rendering

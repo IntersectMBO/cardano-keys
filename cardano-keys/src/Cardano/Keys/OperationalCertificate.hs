@@ -81,10 +81,10 @@ instance HasTypeProxy OperationalCertificateIssueCounter where
   proxyToAsType _ = AsOperationalCertificateIssueCounter
 
 instance HasTextEnvelope OperationalCertificate where
-  textEnvelopeType _ = "NodeOperationalCertificate"
+  textEnvelopeTypes _ = pure "NodeOperationalCertificate"
 
 instance HasTextEnvelope OperationalCertificateIssueCounter where
-  textEnvelopeType _ = "NodeOperationalCertificateIssueCounter"
+  textEnvelopeTypes _ = pure "NodeOperationalCertificateIssueCounter"
 
 getHotKey :: OperationalCertificate -> VerificationKey KesKey
 getHotKey (OperationalCertificate cert _) = KesVerificationKey $ Shelley.ocertVkHot cert

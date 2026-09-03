@@ -124,10 +124,10 @@ instance HasTypeProxy ByronKey where
   proxyToAsType _ = AsByronKey
 
 instance HasTextEnvelope (VerificationKey ByronKey) where
-  textEnvelopeType _ = "PaymentVerificationKeyByron_ed25519_bip32"
+  textEnvelopeTypes _ = pure "PaymentVerificationKeyByron_ed25519_bip32"
 
 instance HasTextEnvelope (SigningKey ByronKey) where
-  textEnvelopeType _ = "PaymentSigningKeyByron_ed25519_bip32"
+  textEnvelopeTypes _ = pure "PaymentSigningKeyByron_ed25519_bip32"
 
 instance SerialiseAsRawBytes (VerificationKey ByronKey) where
   serialiseToRawBytes (ByronVerificationKey (Crypto.VerificationKey xvk)) =
@@ -214,10 +214,10 @@ instance HasTypeProxy ByronKeyLegacy where
   proxyToAsType _ = AsByronKeyLegacy
 
 instance HasTextEnvelope (VerificationKey ByronKeyLegacy) where
-  textEnvelopeType _ = "PaymentVerificationKeyByronLegacy_ed25519_bip32"
+  textEnvelopeTypes _ = pure "PaymentVerificationKeyByronLegacy_ed25519_bip32"
 
 instance HasTextEnvelope (SigningKey ByronKeyLegacy) where
-  textEnvelopeType _ = "PaymentSigningKeyByronLegacy_ed25519_bip32"
+  textEnvelopeTypes _ = pure "PaymentSigningKeyByronLegacy_ed25519_bip32"
 
 newtype instance Hash ByronKeyLegacy = ByronKeyHashLegacy Crypto.KeyHash
   deriving (Eq, Ord)

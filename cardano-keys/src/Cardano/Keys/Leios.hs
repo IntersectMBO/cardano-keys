@@ -42,6 +42,7 @@ import Cardano.Ledger.Hashes (HASH)
 
 import Data.ByteString (ByteString)
 import Data.Either.Combinators (maybeToRight)
+import Data.List.NonEmpty (NonEmpty)
 import Data.String (IsString (..))
 import Prettyprinter (Pretty (..), (<+>))
 
@@ -134,10 +135,11 @@ instance SerialiseAsRawBytes (Hash BlsKey) where
       BlsKeyHash <$> Crypto.hashFromBytes bs
 
 instance HasTextEnvelope (VerificationKey BlsKey) where
-  textEnvelopeType :: AsType (VerificationKey BlsKey) -> TextEnvelopeType
-  textEnvelopeType _ =
-    "BlsVerificationKey_"
-      <> fromString (Crypto.algorithmNameDSIGN proxy)
+  textEnvelopeTypes :: AsType (VerificationKey BlsKey) -> NonEmpty TextEnvelopeType
+  textEnvelopeTypes _ =
+    pure $
+      "BlsVerificationKey_"
+        <> fromString (Crypto.algorithmNameDSIGN proxy)
    where
     proxy :: Proxy Crypto.BLS12381MinSigDSIGN
     proxy = Proxy
@@ -146,10 +148,11 @@ instance HasTextEnvelope (VerificationKey BlsKey) where
   textEnvelopeDefaultDescr _ = "BLS12-381 verification key"
 
 instance HasTextEnvelope (SigningKey BlsKey) where
-  textEnvelopeType :: AsType (SigningKey BlsKey) -> TextEnvelopeType
-  textEnvelopeType _ =
-    "BlsSigningKey_"
-      <> fromString (Crypto.algorithmNameDSIGN proxy)
+  textEnvelopeTypes :: AsType (SigningKey BlsKey) -> NonEmpty TextEnvelopeType
+  textEnvelopeTypes _ =
+    pure $
+      "BlsSigningKey_"
+        <> fromString (Crypto.algorithmNameDSIGN proxy)
    where
     proxy :: Proxy Crypto.BLS12381MinSigDSIGN
     proxy = Proxy
@@ -206,10 +209,11 @@ instance HasTypeProxy BlsPossessionProof where
   proxyToAsType _ = AsBlsPossessionProof
 
 instance HasTextEnvelope BlsPossessionProof where
-  textEnvelopeType :: AsType BlsPossessionProof -> TextEnvelopeType
-  textEnvelopeType _ =
-    "BlsPossessionProof_"
-      <> fromString (Crypto.algorithmNameDSIGN proxy)
+  textEnvelopeTypes :: AsType BlsPossessionProof -> NonEmpty TextEnvelopeType
+  textEnvelopeTypes _ =
+    pure $
+      "BlsPossessionProof_"
+        <> fromString (Crypto.algorithmNameDSIGN proxy)
    where
     proxy :: Proxy Crypto.BLS12381MinSigDSIGN
     proxy = Proxy
