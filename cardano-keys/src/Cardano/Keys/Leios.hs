@@ -28,6 +28,7 @@ where
 import Cardano.Keys.Class
 import Cardano.Keys.HasTypeProxy
 import Cardano.Keys.Hash
+import Cardano.Keys.Serialise.Bech32
 import Cardano.Keys.Serialise.Cbor
 import Cardano.Keys.Serialise.Raw
 import Cardano.Keys.Serialise.TextEnvelope
@@ -104,6 +105,14 @@ instance SerialiseAsRawBytes (SigningKey BlsKey) where
   deserialiseFromRawBytes (AsSigningKey AsBlsKey) bs =
     maybeToRight (SerialiseAsRawBytesError "Unable to deserialise SigningKey BlsKey") $
       BlsSigningKey <$> Crypto.rawDecodeFixedSized bs
+
+instance SerialiseAsBech32 (VerificationKey BlsKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "bls_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["bls_vk"]
+
+instance SerialiseAsBech32 (SigningKey BlsKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "bls_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["bls_sk"]
 
 newtype instance Hash BlsKey
   = BlsKeyHash

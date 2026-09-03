@@ -51,6 +51,8 @@ where
 import Cardano.Keys.Class
 import Cardano.Keys.HasTypeProxy
 import Cardano.Keys.Hash
+import Cardano.Keys.Pretty (docToString)
+import Cardano.Keys.Serialise.Bech32
 import Cardano.Keys.Serialise.Cbor
 import Cardano.Keys.Serialise.Orphans ()
 import Cardano.Keys.Serialise.Raw
@@ -67,13 +69,14 @@ import Cardano.Ledger.Keys (DSIGN)
 import Cardano.Ledger.Keys qualified as Shelley
 
 import Data.Aeson (FromJSON (..), ToJSON (..), ToJSONKey (..))
+import Data.Aeson.Types (toJSONKeyText, withText)
 import Data.Bifunctor (first)
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as BS
 import Data.Either.Combinators (maybeToRight)
 import Data.Maybe
 import Data.String (IsString (..))
-import Prettyprinter (Pretty)
+import Prettyprinter (Pretty, pretty)
 
 --
 -- Shelley payment keys
@@ -141,6 +144,14 @@ instance SerialiseAsRawBytes (SigningKey PaymentKey) where
       (Left (SerialiseAsRawBytesError "Unable to serialise AsSigningKey AsPaymentKey"))
       (Right . PaymentSigningKey)
       (Crypto.rawDecodeFixedSized bs)
+
+instance SerialiseAsBech32 (VerificationKey PaymentKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "addr_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["addr_vk"]
+
+instance SerialiseAsBech32 (SigningKey PaymentKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "addr_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["addr_sk"]
 
 newtype instance Hash PaymentKey
   = PaymentKeyHash {unPaymentKeyHash :: Shelley.KeyHash Shelley.Payment}
@@ -284,6 +295,14 @@ instance SerialiseAsRawBytes (SigningKey PaymentExtendedKey) where
       (const (SerialiseAsRawBytesError "Unable to deserialise SigningKey PaymentExtendedKey"))
       (PaymentExtendedSigningKey <$> Crypto.HD.xprv bs)
 
+instance SerialiseAsBech32 (VerificationKey PaymentExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "addr_xvk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["addr_xvk"]
+
+instance SerialiseAsBech32 (SigningKey PaymentExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "addr_xsk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["addr_xsk"]
+
 newtype instance Hash PaymentExtendedKey
   = PaymentExtendedKeyHash
   {unPaymentExtendedKeyHash :: Shelley.KeyHash Shelley.Payment}
@@ -378,6 +397,14 @@ instance SerialiseAsRawBytes (SigningKey StakeKey) where
   deserialiseFromRawBytes (AsSigningKey AsStakeKey) bs =
     maybeToRight (SerialiseAsRawBytesError "Unable to deserialise SigningKey StakeKey") $
       StakeSigningKey <$> Crypto.rawDecodeFixedSized bs
+
+instance SerialiseAsBech32 (VerificationKey StakeKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "stake_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["stake_vk"]
+
+instance SerialiseAsBech32 (SigningKey StakeKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "stake_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["stake_sk"]
 
 newtype instance Hash StakeKey
   = StakeKeyHash {unStakeKeyHash :: Shelley.KeyHash Shelley.Staking}
@@ -518,6 +545,14 @@ instance SerialiseAsRawBytes (SigningKey StakeExtendedKey) where
     first
       (\msg -> SerialiseAsRawBytesError ("Unable to deserialise SigningKey StakeExtendedKey: " ++ msg))
       $ StakeExtendedSigningKey <$> Crypto.HD.xprv bs
+
+instance SerialiseAsBech32 (VerificationKey StakeExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "stake_xvk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["stake_xvk"]
+
+instance SerialiseAsBech32 (SigningKey StakeExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "stake_xsk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["stake_xsk"]
 
 newtype instance Hash StakeExtendedKey
   = StakeExtendedKeyHash {unStakeExtendedKeyHash :: Shelley.KeyHash Shelley.Staking}
@@ -747,6 +782,18 @@ instance CastVerificationKeyRole CommitteeHotKey PaymentKey where
   castVerificationKey (CommitteeHotVerificationKey (Shelley.VKey vk)) =
     PaymentVerificationKey (Shelley.VKey vk)
 
+instance SerialiseAsBech32 (Hash CommitteeHotKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_hot"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_hot"]
+
+instance SerialiseAsBech32 (VerificationKey CommitteeHotKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_hot_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_hot_vk"]
+
+instance SerialiseAsBech32 (SigningKey CommitteeHotKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_hot_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_hot_sk"]
+
 --
 -- Constitutional Committee Cold Keys
 --
@@ -845,6 +892,18 @@ instance HasTextEnvelope (SigningKey CommitteeColdKey) where
 instance CastVerificationKeyRole CommitteeColdKey PaymentKey where
   castVerificationKey (CommitteeColdVerificationKey (Shelley.VKey vk)) =
     PaymentVerificationKey (Shelley.VKey vk)
+
+instance SerialiseAsBech32 (Hash CommitteeColdKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_cold"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_cold"]
+
+instance SerialiseAsBech32 (VerificationKey CommitteeColdKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_cold_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_cold_vk"]
+
+instance SerialiseAsBech32 (SigningKey CommitteeColdKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_cold_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_cold_sk"]
 
 ---
 --- Committee cold extended keys
@@ -960,6 +1019,14 @@ instance HasTextEnvelope (VerificationKey CommitteeColdExtendedKey) where
 
 instance HasTextEnvelope (SigningKey CommitteeColdExtendedKey) where
   textEnvelopeType _ = "ConstitutionalCommitteeColdExtendedSigningKey_ed25519_bip32"
+
+instance SerialiseAsBech32 (VerificationKey CommitteeColdExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_cold_xvk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_cold_xvk"]
+
+instance SerialiseAsBech32 (SigningKey CommitteeColdExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_cold_xsk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_cold_xsk"]
 
 instance CastVerificationKeyRole CommitteeColdExtendedKey CommitteeColdKey where
   castVerificationKey (CommitteeColdExtendedVerificationKey vk) =
@@ -1087,6 +1154,14 @@ instance HasTextEnvelope (VerificationKey CommitteeHotExtendedKey) where
 
 instance HasTextEnvelope (SigningKey CommitteeHotExtendedKey) where
   textEnvelopeType _ = "ConstitutionalCommitteeHotExtendedSigningKey_ed25519_bip32"
+
+instance SerialiseAsBech32 (VerificationKey CommitteeHotExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_hot_xvk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_hot_xvk"]
+
+instance SerialiseAsBech32 (SigningKey CommitteeHotExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "cc_hot_xsk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["cc_hot_xsk"]
 
 instance CastVerificationKeyRole CommitteeHotExtendedKey CommitteeHotKey where
   castVerificationKey (CommitteeHotExtendedVerificationKey vk) =
@@ -1674,6 +1749,14 @@ instance SerialiseAsRawBytes (SigningKey StakePoolKey) where
       (Right . StakePoolSigningKey)
       (Crypto.rawDecodeFixedSized bs)
 
+instance SerialiseAsBech32 (VerificationKey StakePoolKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "pool_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["pool_vk"]
+
+instance SerialiseAsBech32 (SigningKey StakePoolKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "pool_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["pool_sk"]
+
 newtype instance Hash StakePoolKey
   = StakePoolKeyHash {unStakePoolKeyHash :: Shelley.KeyHash Shelley.StakePool}
   deriving stock (Eq, Ord)
@@ -1689,6 +1772,28 @@ instance SerialiseAsRawBytes (Hash StakePoolKey) where
     maybeToRight
       (SerialiseAsRawBytesError "Unable to deserialise Hash StakePoolKey")
       (StakePoolKeyHash . Shelley.KeyHash <$> Crypto.hashFromBytes bs)
+
+instance SerialiseAsBech32 (Hash StakePoolKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "pool"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["pool"]
+
+instance ToJSON (Hash StakePoolKey) where
+  toJSON = toJSON . serialiseToBech32
+
+instance ToJSONKey (Hash StakePoolKey) where
+  toJSONKey = toJSONKeyText serialiseToBech32
+
+instance FromJSON (Hash StakePoolKey) where
+  parseJSON = withText "PoolId" $ \str ->
+    case deserialiseFromBech32 str of
+      Left err ->
+        fail $
+          docToString $
+            mconcat
+              [ "Error deserialising Hash StakePoolKey: " <> pretty str
+              , " Error: " <> renderBech32DecodeError err
+              ]
+      Right h -> pure h
 
 instance HasTextEnvelope (VerificationKey StakePoolKey) where
   textEnvelopeType _ =
@@ -1820,11 +1925,41 @@ instance SerialiseAsRawBytes (Hash StakePoolExtendedKey) where
       (SerialiseAsRawBytesError "Unable to deserialise Hash StakePoolExtendedKey")
       (StakePoolExtendedKeyHash . Shelley.KeyHash <$> Crypto.hashFromBytes bs)
 
+instance SerialiseAsBech32 (Hash StakePoolExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "pool_xvkh"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["pool_xvkh"]
+
 instance HasTextEnvelope (VerificationKey StakePoolExtendedKey) where
   textEnvelopeType _ = "StakePoolExtendedVerificationKey_ed25519_bip32"
 
 instance HasTextEnvelope (SigningKey StakePoolExtendedKey) where
   textEnvelopeType _ = "StakePoolExtendedSigningKey_ed25519_bip32"
+
+instance SerialiseAsBech32 (VerificationKey StakePoolExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "pool_xvk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["pool_xvk"]
+
+instance SerialiseAsBech32 (SigningKey StakePoolExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "pool_xsk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["pool_xsk"]
+
+instance ToJSON (Hash StakePoolExtendedKey) where
+  toJSON = toJSON . serialiseToBech32
+
+instance ToJSONKey (Hash StakePoolExtendedKey) where
+  toJSONKey = toJSONKeyText serialiseToBech32
+
+instance FromJSON (Hash StakePoolExtendedKey) where
+  parseJSON = withText "PoolId" $ \str ->
+    case deserialiseFromBech32 str of
+      Left err ->
+        fail $
+          docToString $
+            mconcat
+              [ "Error deserialising Hash StakePoolKey: " <> pretty str
+              , " Error: " <> renderBech32DecodeError err
+              ]
+      Right h -> pure h
 
 instance CastVerificationKeyRole StakePoolExtendedKey StakePoolKey where
   castVerificationKey (StakePoolExtendedVerificationKey vk) =
@@ -1900,6 +2035,14 @@ instance SerialiseAsRawBytes (SigningKey DRepKey) where
       (Right . DRepSigningKey)
       (Crypto.rawDecodeFixedSized bs)
 
+instance SerialiseAsBech32 (VerificationKey DRepKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "drep_vk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["drep_vk"]
+
+instance SerialiseAsBech32 (SigningKey DRepKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "drep_sk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["drep_sk"]
+
 newtype instance Hash DRepKey
   = DRepKeyHash {unDRepKeyHash :: Shelley.KeyHash Shelley.DRepRole}
   deriving stock (Eq, Ord)
@@ -1915,6 +2058,28 @@ instance SerialiseAsRawBytes (Hash DRepKey) where
     maybeToRight
       (SerialiseAsRawBytesError "Unable to deserialise Hash DRepKey")
       (DRepKeyHash . Shelley.KeyHash <$> Crypto.hashFromBytes bs)
+
+instance SerialiseAsBech32 (Hash DRepKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "drep"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["drep"]
+
+instance ToJSON (Hash DRepKey) where
+  toJSON = toJSON . serialiseToBech32
+
+instance ToJSONKey (Hash DRepKey) where
+  toJSONKey = toJSONKeyText serialiseToBech32
+
+instance FromJSON (Hash DRepKey) where
+  parseJSON = withText "DRepId" $ \str ->
+    case deserialiseFromBech32 str of
+      Left err ->
+        fail $
+          docToString $
+            mconcat
+              [ "Error deserialising Hash DRepKey: " <> pretty str
+              , " Error: " <> renderBech32DecodeError err
+              ]
+      Right h -> pure h
 
 instance HasTextEnvelope (VerificationKey DRepKey) where
   textEnvelopeType _ =
@@ -2046,6 +2211,14 @@ instance HasTextEnvelope (VerificationKey DRepExtendedKey) where
 
 instance HasTextEnvelope (SigningKey DRepExtendedKey) where
   textEnvelopeType _ = "DRepExtendedSigningKey_ed25519_bip32"
+
+instance SerialiseAsBech32 (VerificationKey DRepExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "drep_xvk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["drep_xvk"]
+
+instance SerialiseAsBech32 (SigningKey DRepExtendedKey) where
+  bech32PrefixFor _ = unsafeHumanReadablePartFromText "drep_xsk"
+  bech32PrefixesPermitted _ = unsafeHumanReadablePartFromText <$> ["drep_xsk"]
 
 instance CastVerificationKeyRole DRepExtendedKey DRepKey where
   castVerificationKey (DRepExtendedVerificationKey vk) =

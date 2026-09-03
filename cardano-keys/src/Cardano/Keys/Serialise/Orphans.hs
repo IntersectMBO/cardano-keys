@@ -19,8 +19,10 @@ import Cardano.Ledger.Shelley (ShelleyEra)
 import Cardano.Protocol.Crypto (StandardCrypto)
 import Cardano.Protocol.TPraos.OCert qualified as Ledger
 
+import Codec.Binary.Bech32 qualified as Bech32
 import Codec.CBOR.Read qualified as CBOR
 import Data.Data (Data)
+import Data.Text.Encoding.Error (UnicodeException (..))
 import Data.Typeable (Typeable)
 
 -- 'TextEnvelopeError' embeds a 'DecoderError' and derives 'Data'; neither
@@ -28,6 +30,14 @@ import Data.Typeable (Typeable)
 deriving instance Data DecoderError
 
 deriving instance Data CBOR.DeserialiseFailure
+
+-- 'Bech32DecodeError' embeds these three and derives 'Data' as well; neither
+-- @bech32@ nor @text@ provides the instances.
+deriving instance Data Bech32.DecodingError
+
+deriving instance Data Bech32.CharPosition
+
+deriving instance Data UnicodeException
 
 -- TODO: drop these and use EncCBOR/DecCBOR
 instance ToCBOR (Ledger.OCert StandardCrypto) where

@@ -51,6 +51,7 @@ library
     Cardano.Keys.OperationalCertificate
     Cardano.Keys.Praos
     Cardano.Keys.Pretty
+    Cardano.Keys.Serialise.Bech32
     Cardano.Keys.Serialise.Cbor
     Cardano.Keys.Serialise.Orphans
     Cardano.Keys.Serialise.Raw
@@ -62,6 +63,7 @@ library
     aeson ^>=2.2 || ^>=2.3,
     aeson-pretty ^>=0.8.11,
     base16-bytestring ^>=1.0,
+    bech32 >=1.1.0,
     bytestring ^>=0.12.2,
     cardano-binary ^>=1.9,
     cardano-crypto ^>=1.1,
@@ -72,6 +74,7 @@ library
     cardano-ledger-shelley ^>=1.19,
     cardano-protocol ^>=0.1,
     cborg ^>=0.2.10,
+    containers >=0.6,
     either ^>=5.0.2,
     formatting ^>=7.2,
     prettyprinter ^>=1.7,
@@ -90,13 +93,17 @@ test-suite cardano-keys-test
   main-is: cardano-keys-test.hs
   type: exitcode-stdio-1.0
   other-modules:
+    Test.Cardano.Keys.Bech32
     Test.Cardano.Keys.Serialisation
 
   build-depends:
+    aeson,
+    bech32,
     bytestring,
     cardano-binary,
     cardano-crypto-class,
     cardano-keys,
+    containers,
     tasty,
     tasty-hunit,
     text,

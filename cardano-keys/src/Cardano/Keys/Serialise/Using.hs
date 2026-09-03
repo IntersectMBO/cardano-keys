@@ -4,11 +4,13 @@
 module Cardano.Keys.Serialise.Using
   ( UsingRawBytes (..)
   , UsingRawBytesHex (..)
+  , UsingBech32 (..)
   )
 where
 
 import Cardano.Keys.HasTypeProxy
 import Cardano.Keys.Pretty (docToString)
+import Cardano.Keys.Serialise.Bech32
 import Cardano.Keys.Serialise.Cbor
 import Cardano.Keys.Serialise.Raw
 
@@ -81,3 +83,35 @@ instance SerialiseAsRawBytes a => FromJSONKey (UsingRawBytesHex a) where
 -- | 'fail' in the parser monad with a rendered 'RawBytesHexError'.
 failRawBytesHex :: MonadFail m => Either RawBytesHexError a -> m a
 failRawBytesHex = either (fail . docToString . renderRawBytesHexError) pure
+
+-- | For use with @deriving via@, to provide instances for any\/all of 'Show',
+-- 'IsString', 'ToJSON', 'FromJSON', 'ToJSONKey', FromJSONKey' using a bech32
+-- encoding, based on the 'SerialiseAsBech32' instance.
+--
+-- > deriving (Show, Pretty) via (UsingBech32 Blah)
+-- > deriving (ToJSON, FromJSON) via (UsingBech32 Blah)
+-- > deriving (ToJSONKey, FromJSONKey) via (UsingBech32 Blah)
+newtype UsingBech32 a = UsingBech32 a
+
+-- | Quotes the representation
+instance SerialiseAsBech32 a => Show (UsingBech32 a) where
+  show (UsingBech32 x) = show $ serialiseToBech32 x
+
+instance SerialiseAsBech32 a => Pretty (UsingBech32 a) where
+  pretty (UsingBech32 a) = pretty $ serialiseToBech32 a
+
+instance SerialiseAsBech32 a => ToJSON (UsingBech32 a) where
+  toJSON (UsingBech32 x) = toJSON (serialiseToBech32 x)
+
+instance SerialiseAsBech32 a => FromJSON (UsingBech32 a) where
+  parseJSON =
+    Aeson.withText tname $ \str ->
+      case deserialiseFromBech32 str of
+        Right x -> return (UsingBech32 x)
+        Left e -> fail $ docToString $ pretty str <> ": " <> renderBech32DecodeError e
+   where
+    tname = (tyConName . typeRepTyCon . typeRep) (Proxy :: Proxy a)
+
+instance SerialiseAsBech32 a => ToJSONKey (UsingBech32 a)
+
+instance SerialiseAsBech32 a => FromJSONKey (UsingBech32 a)
