@@ -8,6 +8,7 @@ module Cardano.Keys
   , module Cardano.Keys.Class
   , module Cardano.Keys.HasTypeProxy
   , module Cardano.Keys.Hash
+  , module Cardano.Keys.IO
   , module Cardano.Keys.Leios
   , module Cardano.Keys.OperationalCertificate
   , module Cardano.Keys.Praos
@@ -25,6 +26,7 @@ import Cardano.Keys.Byron
 import Cardano.Keys.Class
 import Cardano.Keys.HasTypeProxy
 import Cardano.Keys.Hash
+import Cardano.Keys.IO
 import Cardano.Keys.Leios
 import Cardano.Keys.OperationalCertificate
 import Cardano.Keys.Praos
