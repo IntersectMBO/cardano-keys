@@ -28,11 +28,11 @@ import Data.ByteString.Char8 qualified as BSC
 import Data.ByteString.Lazy qualified as BSL
 import Data.Data (typeRep)
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Typeable (TypeRep, Typeable)
 import Data.Word (Word16, Word32, Word64, Word8)
 import Numeric.Natural (Natural)
+import Prettyprinter (Doc, pretty, viaShow)
 
 class (HasTypeProxy a, Typeable a) => SerialiseAsRawBytes a where
   serialiseToRawBytes :: a -> ByteString
@@ -129,30 +129,30 @@ data RawBytesHexError
       -- ^ error message
   deriving Show
 
-renderRawBytesHexError :: RawBytesHexError -> Text
+renderRawBytesHexError :: RawBytesHexError -> Doc ann
 renderRawBytesHexError = \case
   RawBytesHexErrorBase16DecodeFail input typeRep' message ->
     mconcat
       [ "Failed to deserialise "
-      , Text.pack (show typeRep')
+      , viaShow typeRep'
       , ". Expected Base16-encoded bytestring, but got "
-      , toText input
+      , prettyBytes input
       , "; "
-      , Text.pack message
+      , pretty message
       ]
   RawBytesHexErrorRawBytesDecodeFail input typeRep' err ->
     mconcat
       [ "Failed to deserialise "
-      , toText input
+      , prettyBytes input
       , " as "
-      , Text.pack (show typeRep')
+      , viaShow typeRep'
       , ": "
       , renderSerialiseAsRawBytesError err
       ]
  where
-  toText bs = case Text.decodeUtf8' bs of
-    Right t -> t
-    Left _ -> Text.pack (show bs)
+  prettyBytes bs = case Text.decodeUtf8' bs of
+    Right t -> pretty t
+    Left _ -> viaShow bs
 
 newtype SerialiseAsRawBytesError = SerialiseAsRawBytesError
   -- TODO We can do better than use String to carry the error message
@@ -160,5 +160,5 @@ newtype SerialiseAsRawBytesError = SerialiseAsRawBytesError
   }
   deriving (Eq, Show)
 
-renderSerialiseAsRawBytesError :: SerialiseAsRawBytesError -> Text
-renderSerialiseAsRawBytesError = Text.pack . unSerialiseAsRawBytesError
+renderSerialiseAsRawBytesError :: SerialiseAsRawBytesError -> Doc ann
+renderSerialiseAsRawBytesError = pretty . unSerialiseAsRawBytesError

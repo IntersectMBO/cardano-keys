@@ -50,6 +50,7 @@ library
     Cardano.Keys.Leios
     Cardano.Keys.OperationalCertificate
     Cardano.Keys.Praos
+    Cardano.Keys.Pretty
     Cardano.Keys.Serialise.Cbor
     Cardano.Keys.Serialise.Orphans
     Cardano.Keys.Serialise.Raw

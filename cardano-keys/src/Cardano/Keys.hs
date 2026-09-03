@@ -11,6 +11,7 @@ module Cardano.Keys
   , module Cardano.Keys.Leios
   , module Cardano.Keys.OperationalCertificate
   , module Cardano.Keys.Praos
+  , module Cardano.Keys.Pretty
   , module Cardano.Keys.Serialise.Cbor
   , module Cardano.Keys.Serialise.Raw
   , module Cardano.Keys.Serialise.TextEnvelope
@@ -26,6 +27,7 @@ import Cardano.Keys.Hash
 import Cardano.Keys.Leios
 import Cardano.Keys.OperationalCertificate
 import Cardano.Keys.Praos
+import Cardano.Keys.Pretty
 import Cardano.Keys.Serialise.Cbor
 import Cardano.Keys.Serialise.Orphans ()
 import Cardano.Keys.Serialise.Raw

@@ -8,13 +8,13 @@ module Cardano.Keys.Serialise.Using
 where
 
 import Cardano.Keys.HasTypeProxy
+import Cardano.Keys.Pretty (docToString)
 import Cardano.Keys.Serialise.Cbor
 import Cardano.Keys.Serialise.Raw
 
 import Data.Aeson (FromJSON (..), FromJSONKey (..), ToJSON (..), ToJSONKey (..))
 import Data.Aeson.Types qualified as Aeson
 import Data.ByteString qualified as B
-import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Typeable (tyConName, typeRep, typeRepTyCon)
 import Numeric (showBin)
@@ -80,4 +80,4 @@ instance SerialiseAsRawBytes a => FromJSONKey (UsingRawBytesHex a) where
 
 -- | 'fail' in the parser monad with a rendered 'RawBytesHexError'.
 failRawBytesHex :: MonadFail m => Either RawBytesHexError a -> m a
-failRawBytesHex = either (fail . Text.unpack . renderRawBytesHexError) pure
+failRawBytesHex = either (fail . docToString . renderRawBytesHexError) pure

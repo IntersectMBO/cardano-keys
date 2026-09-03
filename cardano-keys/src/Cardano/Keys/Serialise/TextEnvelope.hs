@@ -58,8 +58,8 @@ import Data.List qualified as List
 import Data.Maybe (fromMaybe)
 import Data.String (IsString)
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
+import Prettyprinter (Doc, pretty, viaShow)
 
 -- ----------------------------------------------------------------------------
 -- Text envelopes
@@ -130,33 +130,34 @@ data TextEnvelopeError
   | TextEnvelopeUnknownType !Text
   deriving (Eq, Show, Data)
 
--- | Render a 'TextEnvelopeError' as human-readable text.
+-- | Render a 'TextEnvelopeError' as a human-readable document.
 --
 -- Error types here carry a renderer rather than a class instance, following the
--- convention of the rest of this package.
-renderTextEnvelopeError :: TextEnvelopeError -> Text
+-- convention of the rest of this package. Use 'Cardano.Keys.Pretty.docToText'
+-- to get the text of one.
+renderTextEnvelopeError :: TextEnvelopeError -> Doc ann
 renderTextEnvelopeError = \case
   TextEnvelopeTypeError [TextEnvelopeType expType] (TextEnvelopeType actType) ->
     mconcat
       [ "TextEnvelope type error: "
-      , " Expected: " <> Text.pack expType
-      , " Actual: " <> Text.pack actType
+      , " Expected: " <> pretty expType
+      , " Actual: " <> pretty actType
       ]
   TextEnvelopeTypeError expTypes (TextEnvelopeType actType) ->
     mconcat
       [ "TextEnvelope type error: "
       , " Expected one of: "
-      , mconcat $ List.intersperse ", " [Text.pack expType | TextEnvelopeType expType <- expTypes]
-      , " Actual: " <> Text.pack actType
+      , mconcat $ List.intersperse ", " [pretty expType | TextEnvelopeType expType <- expTypes]
+      , " Actual: " <> pretty actType
       ]
   TextEnvelopeAesonDecodeError decErr ->
-    "TextEnvelope aeson decode error: " <> Text.pack decErr
+    "TextEnvelope aeson decode error: " <> pretty decErr
   TextEnvelopeDecodeError decErr ->
-    "TextEnvelope decode error: " <> Text.pack (show decErr)
+    "TextEnvelope decode error: " <> viaShow decErr
   TextEnvelopeUnknownKeyWitness desc ->
-    "Unknown key witness specified: " <> Text.pack (show desc)
+    "Unknown key witness specified: " <> viaShow desc
   TextEnvelopeUnknownType unknownType ->
-    "Unknown TextEnvelope type: " <> unknownType
+    "Unknown TextEnvelope type: " <> pretty unknownType
 
 -- | Check that the \"type\" of the 'TextEnvelope' is as expected.
 --

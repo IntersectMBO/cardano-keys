@@ -5,8 +5,8 @@
 -- | Tests for the serialisation of the key catalogue.
 --
 -- Everything here is pure: the envelope @type@ strings every 'HasTextEnvelope'
--- instance writes, the text 'renderTextEnvelopeError' produces, and a CBOR
--- round-trip of a Byron signing key made from a fixed seed.
+-- instance writes, the text the document of 'renderTextEnvelopeError' lays out,
+-- and a CBOR round-trip of a Byron signing key made from a fixed seed.
 module Test.Cardano.Keys.Serialisation (tests) where
 
 import Cardano.Keys.Byron (AsType (AsByronKey), ByronKey, ByronKeyLegacy)
@@ -18,6 +18,7 @@ import Cardano.Keys.OperationalCertificate
   , OperationalCertificateIssueCounter
   )
 import Cardano.Keys.Praos (KesKey, VrfKey)
+import Cardano.Keys.Pretty (docToText)
 import Cardano.Keys.Serialise.Cbor (deserialiseFromCBOR, serialiseToCBOR)
 import Cardano.Keys.Serialise.TextEnvelope
   ( HasTextEnvelope
@@ -152,7 +153,8 @@ ty = textEnvelopeType (asType @a)
 -- Error rendering
 --
 
--- | The exact text 'renderTextEnvelopeError' produces for each constructor.
+-- | The exact text the document of 'renderTextEnvelopeError' lays out for each
+-- constructor, under the layout 'docToText' pins.
 --
 -- These messages reach whoever is starting a node, so they are pinned rather
 -- than left to drift.
@@ -186,7 +188,7 @@ renderTextEnvelopeErrorTests =
     ]
  where
   golden name err expected =
-    testCase name $ assertEqual "rendered error" expected (renderTextEnvelopeError err)
+    testCase name $ assertEqual "rendered error" expected (docToText (renderTextEnvelopeError err))
 
 --
 -- Byron keys
