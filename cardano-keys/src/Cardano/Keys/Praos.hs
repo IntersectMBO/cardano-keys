@@ -20,6 +20,9 @@ module Cardano.Keys.Praos
   , VerificationKey (..)
   , SigningKey (..)
 
+    -- * The unsound pure KES key
+  , unsoundPureKesSigningKey
+
     -- * Signing
   , signArbitraryBytesKes
   )
@@ -151,6 +154,17 @@ instance HasTextEnvelope (SigningKey KesKey) where
    where
     proxy :: Proxy (KES StandardCrypto)
     proxy = Proxy
+
+-- | The @unsound pure@ KES signing key a 'SigningKey' 'KesKey' wraps.
+--
+-- The \"unsound\" in 'Crypto.UnsoundPureSignKeyKES' is deliberate, and this
+-- accessor keeps it visible at the call site. It is the KES key variant that
+-- can be loaded from a file at all: the mlocked variant exists precisely so
+-- that KES secrets need never touch disk, and a node that gets its KES key
+-- from a KES agent never takes this path.
+unsoundPureKesSigningKey
+  :: SigningKey KesKey -> Crypto.UnsoundPureSignKeyKES (KES StandardCrypto)
+unsoundPureKesSigningKey (KesSigningKey sk) = sk
 
 signArbitraryBytesKes
   :: SigningKey KesKey
