@@ -77,6 +77,9 @@ if arch(wasm32)
   package crypton
     ghc-options: -optc-DARGON2_NO_THREADS
 
+  package cryptonite
+    ghc-options: -optc-DARGON2_NO_THREADS
+
 -- IMPORTANT
 -- Do NOT add more source-repository-package stanzas here unless they are strictly
 -- temporary! Please read the section in CONTRIBUTING about updating dependencies.
