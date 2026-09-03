@@ -264,9 +264,9 @@ instance SerialiseAsRawBytes (SigningKey ByronKeyLegacy) where
         cborError
           ( lbl
               <> " failed the size check. Expected "
-              <> Text.pack (show requestedSize)
+              <> Text.show requestedSize
               <> ", found "
-              <> Text.pack (show actualSize)
+              <> Text.show actualSize
           )
 
     decodeXPrv :: CBOR.Decoder s Wallet.XPrv
