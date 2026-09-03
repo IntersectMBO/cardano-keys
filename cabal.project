@@ -27,6 +27,11 @@ package crypton
   -- generation is dubious. Set the flag so we use /dev/urandom by default.
   flags: -support_rdrand
 
+-- disable c++ nonsense on bitvec, to make it compile. The windows linker/loader
+-- chokes on c++ dependencies.
+package bitvec
+  flags: -simd
+
 tests: True
 test-show-details: direct
 
