@@ -3,9 +3,12 @@ name: cardano-keys
 version: 11.0.0.0
 synopsis: Cardano key types and their serialisation
 description:
-  This library holds the Cardano key types and the bech32 serialisation
-  independently of cardano-api so that projects can use it without having
-  to depend on the full cardano stack.
+  This library holds the Cardano key types and the serialisations they have:
+  raw bytes, hex, CBOR, bech32, and the text-envelope JSON format. It also
+  provides operational certificates and the readers that turn the path of a
+  credential file into the key it holds. All of it independently of
+  cardano-api, so that projects can use the keys without having to depend on
+  the full cardano stack.
 
 category: Cardano
 copyright: 2020-2026 Input Output Global Inc (IOG).
