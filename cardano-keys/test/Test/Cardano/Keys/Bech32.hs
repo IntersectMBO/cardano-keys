@@ -13,6 +13,7 @@ import Cardano.Keys.Class (Key (..))
 import Cardano.Keys.HasTypeProxy (HasTypeProxy, asType)
 import Cardano.Keys.Leios (AsType (AsBlsKey))
 import Cardano.Keys.Praos (AsType (AsKesKey, AsVrfKey))
+import Cardano.Keys.Pretty (docToText)
 import Cardano.Keys.Serialise.Bech32
 import Cardano.Keys.Shelley
 
@@ -22,8 +23,10 @@ import Codec.Binary.Bech32 qualified as Bech32
 import Data.Aeson qualified as Aeson
 import Data.ByteString qualified as BS
 import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Text.Encoding.Error (UnicodeException (DecodeError))
 
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertEqual, assertFailure, testCase)
@@ -35,6 +38,7 @@ tests =
     [ prefixTests
     , roundTripTests
     , encodingTests
+    , renderTests
     , jsonTests
     ]
 
@@ -197,6 +201,59 @@ encodingTests =
  where
   pinned name v expected =
     testCase name $ assertEqual "encoded" expected (serialiseToBech32 v)
+
+--
+-- Rendered errors
+--
+
+-- | Every constructor of 'Bech32DecodeError' rendered, pinned to the exact
+-- messages the origin's golden files record.
+renderTests :: TestTree
+renderTests =
+  testGroup
+    "rendered errors"
+    [ pinnedRender
+        "Bech32DecodingError"
+        (Bech32DecodingError Bech32.StringToDecodeTooLong)
+        "StringToDecodeTooLong"
+    , pinnedRender
+        "Bech32UnexpectedPrefix"
+        (Bech32UnexpectedPrefix "<text>" (Set.singleton "<text>"))
+        ( "Unexpected Bech32 prefix: the actual prefix is \"<text>\", "
+            <> "but it was expected to be \"<text>\""
+        )
+    , pinnedRender
+        "Bech32DataPartToBytesError"
+        (Bech32DataPartToBytesError "<text>")
+        ( "There was an error in extracting the bytes from the data part of the "
+            <> "Bech32-encoded string."
+        )
+    , pinnedRender
+        "Bech32DeserialiseFromBytesError"
+        (Bech32DeserialiseFromBytesError "<bytes>")
+        ( "There was an error in deserialising the data part of the "
+            <> "Bech32-encoded string into a value of the expected type."
+        )
+    , pinnedRender
+        "Bech32WrongPrefix"
+        (Bech32WrongPrefix "<text>" "<text>")
+        ( "Mismatch in the Bech32 prefix: the actual prefix is \"<text>\", "
+            <> "but the prefix for this payload value should be \"<text>\""
+        )
+    , pinnedRender
+        "Bech32UnexpectedHeader"
+        (Bech32UnexpectedHeader "<text>" "<text>")
+        ( "Unexpected CIP-129 Bech32 header: the actual header is \"<text>\", "
+            <> "but it was expected to be \"<text>\""
+        )
+    , pinnedRender
+        "Bech32InvalidUtf8"
+        (Bech32InvalidUtf8 (DecodeError "<decode error>" (Just 0xc3)))
+        "The Bech32-encoded string is not valid UTF-8: Cannot decode byte '\\xc3': <decode error>"
+    ]
+ where
+  pinnedRender name err expected =
+    testCase name $ assertEqual "rendered" expected (docToText (renderBech32DecodeError err))
 
 --
 -- The bech32-backed JSON instances
