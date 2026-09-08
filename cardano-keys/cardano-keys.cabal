@@ -78,7 +78,7 @@ library
     bytestring ^>=0.12.2,
     canonical-json ^>=0.6,
     cardano-binary ^>=1.9,
-    cardano-crypto ^>=1.1,
+    cardano-crypto,
     cardano-crypto-class ^>=2.5,
     cardano-crypto-wrapper ^>=1.7,
     cardano-ledger-byron ^>=1.3,
