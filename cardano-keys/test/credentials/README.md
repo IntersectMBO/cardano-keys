@@ -1,13 +1,6 @@
 # Credential test fixtures
 
-Real key material, not hand-rolled: a fixture built by this package's own
-encoder would round-trip through its own decoder and prove nothing. Generated
-with `cardano-cli 11.0.0.0` (git rev `01a89dad991e5a19990150b4e1de348a1481a37a`).
-
-That provenance is the whole point of these files: they are the only evidence
-that the `CBORGroup`/`shelleyProtVer` operational certificate payload and the
-legacy Byron `XPrv` reading path in this package are byte-compatible with what
-`cardano-cli` writes. Do not regenerate them with anything else.
+Generated with `cardano-cli 11.0.0.0` (git rev `01a89dad991e5a19990150b4e1de348a1481a37a`).
 
 | File | What it is |
 |---|---|

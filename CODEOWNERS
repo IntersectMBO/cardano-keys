@@ -1,7 +1,3 @@
-# DRAFT - this file is provisional.
-# Update the ownership rows once the maintainership agreement for this
-# repository is settled.
-
 # Release manager added for notification on dependency updates
 cabal.project                                                 @Jimbo4350 @disassembler
 
