@@ -1,7 +1,7 @@
 # cardano-keys
 
-The content of the `cardano-keys` package is complete: the key types, their serialisation and the credential file readers are all here.
-It has **not** had a first release yet — nothing is published to [CHaP](https://chap.intersectmbo.org/) and the version stays at `11.0.0.0` until that first release is cut.
+The `cardano-keys` package holds the key types, their serialisation and the credential file readers.
+It is released on [CHaP](https://chap.intersectmbo.org/).
 
 This repository hosts `cardano-keys`, the Haskell library of Cardano key types together with the serialisation layers for them.
 That code was extracted from [`cardano-api`](https://github.com/IntersectMBO/cardano-api), which still carries its own copies of it; see [What lives here and what stays in cardano-api](#what-lives-here-and-what-stays-in-cardano-api).
@@ -76,11 +76,6 @@ Build notes:
 
 Cardano libraries are released on [CHaP](https://chap.intersectmbo.org/), not on Hackage, so your project needs CHaP configured.
 
-> :warning: **Note**
->
-> `cardano-keys` is not published to CHaP yet.
-> Until the first release, we don't recommend depending on this package, but if you need to, you can do it directly (for example with a `source-repository-package` stanza in your `cabal.project`).
-
 `cabal.project` points at your package and registers CHaP:
 
 ```
@@ -100,7 +95,7 @@ repository cardano-haskell-packages
 
 (Tip: also pin an `index-state` to make your builds reproducible; see the [CHaP README](https://github.com/IntersectMBO/cardano-haskell-packages).)
 
-Once the package is on CHaP, depending on it will look like this:
+With CHaP configured, depending on it looks like this:
 
 ```cabal
 cabal-version: 3.0

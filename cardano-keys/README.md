@@ -101,7 +101,3 @@ that the operational-certificate payload and the legacy Byron `XPrv` reading pat
 byte-compatible with what `cardano-cli` writes, so they must not be regenerated with anything else.
 Their README records the exact commands that made them.
 
-## Status
-
-The package's content is complete, but it has not been released yet: it is not published to CHaP,
-and the version stays at `11.0.0.0` until the first release is cut.
