@@ -1,0 +1,5 @@
+description: Release cardano-keys 11.0.0.0
+kind:
+- release
+pr: 6
+project: cardano-keys
