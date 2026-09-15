@@ -58,7 +58,7 @@
 # - ignore: {name: Use const, within: SpecialModule} # Only within certain modules
 
 # Allow snake_case naming in test modules (following Haskell test property convention)
-- ignore: {name: Use camelCase, within: [Test.Cardano.Keys.**, Test.Golden.Cardano.Keys.**]} # adjust when the test module namespace is final (Cardano.Key vs Cardano.Keys)
+- ignore: {name: Use camelCase, within: [Test.Cardano.Keys.**, Test.Golden.Cardano.Keys.**]}
 
 - ignore: {name: Eta reduce}
 - ignore: {name: Use + directly}

@@ -1,17 +1,27 @@
 # cardano-keys
 
-> :warning: **Warning**
->
-> This repo is still under construction and packages in it have not been released.
+The `cardano-keys` package holds the key types, their serialisation and the credential file readers.
+It is released on [CHaP](https://chap.intersectmbo.org/).
 
-This repository will host `cardano-keys`, the Haskell library of Cardano key types together with the bech32 serialisation layer for them.
-That code currently lives in [`cardano-api`](https://github.com/IntersectMBO/cardano-api) and is being extracted into this repository.
+This repository hosts `cardano-keys`, the Haskell library of Cardano key types together with the serialisation layers for them.
+That code was extracted from [`cardano-api`](https://github.com/IntersectMBO/cardano-api), which still carries its own copies of it; see [What lives here and what stays in cardano-api](#what-lives-here-and-what-stays-in-cardano-api).
 
 ## What is in this repository
 
 | Package | What it is |
 | --- | --- |
-| [`cardano-keys`](cardano-keys/) | The library. Currently incomplete; the key types and their bech32 serialisation are being moved here from `cardano-api`. |
+| [`cardano-keys`](cardano-keys/) | The library: key types for every Cardano key role, their raw-bytes, CBOR, bech32 and text-envelope serialisation, operational certificates, and the credential file readers a block-forging node needs. |
+
+## What lives here and what stays in cardano-api
+
+What lives here is the key types, the serialisation classes and instances that give those types their on-disk and on-the-wire forms — raw bytes, CBOR, bech32 and text envelopes — and the credential file readers that answer "given a path, give me the key" ([issue #2](https://github.com/IntersectMBO/cardano-keys/issues/2)).
+The bech32 layer travels with the types on purpose: the bech32-backed JSON instances would be orphan instances anywhere else.
+
+What stays in `cardano-api` is address bech32, canonical CBOR, `cardano-api`'s own text-envelope IO, everything era-dependent, and all credential *assembly*: which files a node should read, which combinations of them are valid, and the command-line parsing that produces the paths.
+Assembly is the consumer's job, not this package's — the readers here take a `FilePath` and nothing else.
+
+The overlap with `cardano-api` is the transition, not the destination: when `cardano-api` adopts this package it deletes its own copies in the same release train, after which key serialisation lives in exactly one place.
+This is the boundary first proposed in [cardano-config PR #13](https://github.com/IntersectMBO/cardano-config/pull/13), with the file readers added to it.
 
 ## Requirements
 
@@ -66,11 +76,6 @@ Build notes:
 
 Cardano libraries are released on [CHaP](https://chap.intersectmbo.org/), not on Hackage, so your project needs CHaP configured.
 
-> :warning: **Note**
->
-> `cardano-keys` is not published to CHaP yet.
-> Until the first release, we don't recommend depending on this package, but if you need to, you can do it directly (for example with a `source-repository-package` stanza in your `cabal.project`).
-
 `cabal.project` points at your package and registers CHaP:
 
 ```
@@ -90,7 +95,7 @@ repository cardano-haskell-packages
 
 (Tip: also pin an `index-state` to make your builds reproducible; see the [CHaP README](https://github.com/IntersectMBO/cardano-haskell-packages).)
 
-Once the package is on CHaP, depending on it will look like this:
+With CHaP configured, depending on it looks like this:
 
 ```cabal
 cabal-version: 3.0

@@ -27,6 +27,11 @@ package crypton
   -- generation is dubious. Set the flag so we use /dev/urandom by default.
   flags: -support_rdrand
 
+-- disable c++ nonsense on bitvec, to make it compile. The windows linker/loader
+-- chokes on c++ dependencies.
+package bitvec
+  flags: -simd
+
 tests: True
 test-show-details: direct
 
@@ -77,6 +82,9 @@ if arch(wasm32)
   package crypton
     ghc-options: -optc-DARGON2_NO_THREADS
 
+  package cryptonite
+    ghc-options: -optc-DARGON2_NO_THREADS
+
 -- IMPORTANT
 -- Do NOT add more source-repository-package stanzas here unless they are strictly
 -- temporary! Please read the section in CONTRIBUTING about updating dependencies.
@@ -84,10 +92,27 @@ if arch(wasm32)
 -- cabal-allow-newer begin
 if impl(ghc >=9.14)
   allow-newer:
+    , bytestring-trie:base
     , canonical-json:containers
     , cborg:base
     , cborg:containers
+    , cborg-json:base
+    , compact:base
+    , dependent-map:containers
+    , dictionary-sharing:containers
+    , diff-containers:base
+    , fs-sim:QuickCheck
+    , lens-family:containers
+    , lens-family-core:containers
+    , newtype-generics:base
+    , ordered-containers:containers
+    , partial-order:containers
+    , safe-wild-cards:template-haskell
+    , serdoc-core:template-haskell
     , serialise:base
     , serialise:containers
     , serialise:time
+    , tdigest:base
+    , time-locale-compat:time
+    , with-utf8:base
 -- cabal-allow-newer end

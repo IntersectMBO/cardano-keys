@@ -2,10 +2,6 @@
   description = "cardano-keys";
 
   inputs = {
-    # hackageNix, haskellNix, CHaP and ghc-wasm-meta are pinned so the
-    # toolchain derivations (and their cache hits, e.g. the GHC 9.14 haddock
-    # compiler) stay stable.
-    # Bump the pins deliberately, not via a blanket `nix flake update`.
     hackageNix = {
       url = "github:input-output-hk/hackage.nix/a69c841fe2cbb3571739018f9efb7f533279fb15";
       flake = false;
