@@ -3,7 +3,7 @@
 
   inputs = {
     hackageNix = {
-      url = "github:input-output-hk/hackage.nix/a69c841fe2cbb3571739018f9efb7f533279fb15";
+      url = "github:input-output-hk/hackage.nix/577fad227395232d70bd846a366e744380ffc19c";
       flake = false;
     };
     haskellNix = {
@@ -25,7 +25,7 @@
     };
 
     CHaP = {
-      url = "github:intersectmbo/cardano-haskell-packages/869e3b32ffc5f0f59f11648c8bd9adeade286694";
+      url = "github:intersectmbo/cardano-haskell-packages/b661249c6e149dac1d8f9ea654c59f3292e6afe4";
       flake = false;
     };
 
