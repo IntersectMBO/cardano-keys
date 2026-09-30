@@ -55,8 +55,8 @@ library
     Cardano.Keys
     Cardano.Keys.Byron
     Cardano.Keys.Class
-    Cardano.Keys.HasTypeProxy
     Cardano.Keys.Hash
+    Cardano.Keys.HasTypeProxy
     Cardano.Keys.IO
     Cardano.Keys.Leios
     Cardano.Keys.OperationalCertificate
@@ -85,7 +85,7 @@ library
     cardano-ledger-core ^>=1.22,
     cardano-ledger-shelley ^>=1.20,
     cardano-prelude ^>=0.2,
-    cardano-protocol ^>=0.1,
+    cardano-protocol ^>=0.2,
     cborg ^>=0.2.10,
     containers >=0.6,
     either ^>=5.0.2,
