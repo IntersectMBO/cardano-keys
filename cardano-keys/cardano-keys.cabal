@@ -55,8 +55,8 @@ library
     Cardano.Keys
     Cardano.Keys.Byron
     Cardano.Keys.Class
-    Cardano.Keys.Hash
     Cardano.Keys.HasTypeProxy
+    Cardano.Keys.Hash
     Cardano.Keys.IO
     Cardano.Keys.Leios
     Cardano.Keys.OperationalCertificate
