@@ -1,0 +1,5 @@
+description: 'Relaxed bytestring lower bound for GHC9.6 builtin version - #9'
+kind:
+- maintenance
+pr: 9
+project: cardano-keys
