@@ -75,7 +75,7 @@ library
     aeson-pretty ^>=0.8.11,
     base16-bytestring ^>=1.0,
     bech32 >=1.1.0,
-    bytestring ^>=0.12.2,
+    bytestring >=0.11.5.0 && <0.13,
     canonical-json ^>=0.6,
     cardano-binary ^>=1.9,
     cardano-crypto,
