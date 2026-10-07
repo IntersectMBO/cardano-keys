@@ -164,6 +164,23 @@ textEnvelopeTests opCertPath kesPath vrfPath =
     , testCase "a missing file is reported, not thrown" $ do
         err <- expectLeft "a file that is not there" =<< readKes "/nonexistent/kes.skey"
         expectFileIOError "/nonexistent/kes.skey" err
+    , testCase "a missing file's rendered error names the file once" $ do
+        err <- expectLeft "a file that is not there" =<< readKes "/nonexistent/kes.skey"
+        let rendered = docToText (renderFileError renderTextEnvelopeError err)
+        assertBool
+          ("starts with the file: " <> Text.unpack rendered)
+          ("/nonexistent/kes.skey: " `Text.isPrefixOf` rendered)
+        assertEqual
+          ("names the file once: " <> Text.unpack rendered)
+          1
+          (Text.count "/nonexistent/kes.skey" rendered)
+    , testCase "an IO error that does not name the file is rendered with the file" $
+        assertEqual
+          "the rendered error"
+          "kes.skey: user error (boom)"
+          ( docToText
+              (renderFileError renderTextEnvelopeError (FileIOError "kes.skey" (userError "boom")))
+          )
     ]
 
 readOpCert :: FilePath -> IO (Either (FileError TextEnvelopeError) OperationalCertificate)

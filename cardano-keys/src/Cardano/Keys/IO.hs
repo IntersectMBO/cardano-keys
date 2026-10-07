@@ -54,6 +54,7 @@ import Data.ByteString.Lazy qualified as LBS
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Prettyprinter (Doc, pretty)
+import System.IO.Error (ioeGetFileName)
 import Text.JSON.Canonical qualified as Canonical
 
 -- ----------------------------------------------------------------------------
@@ -78,8 +79,10 @@ renderFileError :: (e -> Doc ann) -> FileError e -> Doc ann
 renderFileError renderPayload = \case
   FileError path e ->
     pretty path <> ": " <> renderPayload e
-  FileIOError path ioe ->
-    pretty path <> ": " <> pretty (displayException ioe)
+  FileIOError path ioe
+    -- The exception's own message already starts with the path it names.
+    | ioeGetFileName ioe == Just path -> pretty (displayException ioe)
+    | otherwise -> pretty path <> ": " <> pretty (displayException ioe)
 
 -- ----------------------------------------------------------------------------
 -- Text envelope files
