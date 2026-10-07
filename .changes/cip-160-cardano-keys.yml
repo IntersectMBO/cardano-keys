@@ -1,0 +1,6 @@
+project: cardano-keys
+pr: 0
+kind:
+  - maintenance
+description: |
+  Update core and Shelley dependency bounds for the Receiving-aware ledger source proposal; key formats and interfaces are unchanged.
