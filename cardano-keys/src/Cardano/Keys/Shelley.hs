@@ -141,7 +141,7 @@ instance SerialiseAsRawBytes (SigningKey PaymentKey) where
 
   deserialiseFromRawBytes (AsSigningKey AsPaymentKey) bs =
     maybe
-      (Left (SerialiseAsRawBytesError "Unable to serialise AsSigningKey AsPaymentKey"))
+      (Left (SerialiseAsRawBytesError "Unable to deserialise SigningKey PaymentKey"))
       (Right . PaymentSigningKey)
       (Crypto.rawDecodeFixedSized bs)
 

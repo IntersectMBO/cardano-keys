@@ -1,0 +1,5 @@
+description: The error for a payment signing key that cannot be read now says "deserialise" instead of "serialise".
+kind:
+- bugfix
+pr: 13
+project: cardano-keys
