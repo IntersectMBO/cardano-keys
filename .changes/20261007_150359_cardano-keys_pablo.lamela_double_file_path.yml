@@ -1,0 +1,5 @@
+description: '`renderFileError` shows the file path once instead of twice when a file cannot be read.'
+kind:
+- bugfix
+pr: 12
+project: cardano-keys
