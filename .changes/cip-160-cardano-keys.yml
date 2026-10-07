@@ -1,5 +1,5 @@
 project: cardano-keys
-pr: 0
+pr: 11
 kind:
   - maintenance
 description: |
