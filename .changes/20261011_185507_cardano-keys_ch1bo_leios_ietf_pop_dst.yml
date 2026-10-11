@@ -1,0 +1,5 @@
+description: Fix createBlsPossessionProof to new cardano-base API
+kind:
+- compatible
+pr: 14
+project: cardano-keys
