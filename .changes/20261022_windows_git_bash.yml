@@ -1,0 +1,6 @@
+project: cardano-keys
+pr: 15
+kind:
+  - maintenance
+description: |
+  Use Git Bash instead of MSYS2 for the Windows CI steps.
