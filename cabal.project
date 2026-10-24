@@ -14,7 +14,7 @@ repository cardano-haskell-packages
 -- you need to run if you change them
 index-state:
   , hackage.haskell.org 2026-09-30T08:47:51Z
-  , cardano-haskell-packages 2026-10-01T20:54:24Z
+  , cardano-haskell-packages 2026-10-16T13:16:21Z
 
 packages:
     cardano-keys
@@ -123,11 +123,37 @@ if impl(ghc >=9.14)
     , with-utf8:base
 -- cabal-allow-newer end
 
+-- cardano-base master past PR #695: proofs of possession use the IETF BLS_POP_
+-- DST and the BLS DSTs take no signing context.
 source-repository-package
     type: git
     location: https://github.com/IntersectMBO/cardano-base.git
     tag: c1e1ed8d7ae39c111c73fc5f59ac37ce5933b83c
     --sha256: sha256-UawlVBgCkU8H6o1k8BHj6pRkZjbHsdVEVIBW0ZFpWkc=
     subdir:
+        cardano-base
+        cardano-binary
         cardano-crypto-class
         cardano-crypto-leios
+        cardano-crypto-praos
+        cardano-slotting
+        cardano-strict-containers
+
+-- cardano-ledger built against the cardano-base above, for networks with the
+-- Leios prototype (branch leios-main-compat).
+source-repository-package
+    type: git
+    location: https://github.com/IntersectMBO/cardano-ledger.git
+    tag: b7912102b4dae0908e3fcdca8379c950310b169b
+    --sha256: sha256-Hj8dfyVSLmeuXBNubcrhLKTlGtNv0KXeQ5MxvhFCK/s=
+    subdir:
+        eras/byron/crypto
+        eras/byron/ledger/impl
+        eras/shelley/impl
+        libs/cardano-data
+        libs/cardano-ledger-binary
+        libs/cardano-ledger-core
+        libs/cardano-protocol
+        libs/non-integral
+        libs/small-steps
+        libs/vector-map
