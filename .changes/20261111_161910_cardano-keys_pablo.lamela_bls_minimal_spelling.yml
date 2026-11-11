@@ -1,0 +1,5 @@
+description: BLS verification keys, signing keys and possession proofs are written with `Minimal` instead of `Mininimal` in their text envelope type, and the old spelling is still read.
+kind:
+- bugfix
+pr: 16
+project: cardano-keys

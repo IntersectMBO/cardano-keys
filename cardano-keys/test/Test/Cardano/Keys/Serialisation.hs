@@ -17,7 +17,12 @@ module Test.Cardano.Keys.Serialisation (tests) where
 import Cardano.Keys.Byron (AsType (AsByronKey), ByronKey, ByronKeyLegacy)
 import Cardano.Keys.Class (Key (..))
 import Cardano.Keys.HasTypeProxy (HasTypeProxy (..), asType)
-import Cardano.Keys.Leios (BlsKey, BlsPossessionProof)
+import Cardano.Keys.Leios
+  ( AsType (AsBlsKey)
+  , BlsKey
+  , BlsPossessionProof
+  , createBlsPossessionProof
+  )
 import Cardano.Keys.OperationalCertificate
   ( OperationalCertificate
   , OperationalCertificateIssueCounter
@@ -54,7 +59,7 @@ import Data.Text qualified as Text
 import Data.Word (Word8)
 
 import Test.Tasty (TestTree, testGroup)
-import Test.Tasty.HUnit (assertEqual, assertFailure, testCase)
+import Test.Tasty.HUnit (Assertion, assertEqual, assertFailure, testCase)
 
 tests :: TestTree
 tests =
@@ -62,6 +67,7 @@ tests =
     "keys"
     [ envelopeTypeTests
     , envelopeAcceptanceTests
+    , blsOlderSpellingTests
     , renderTextEnvelopeErrorTests
     , byronKeyCborTests
     ]
@@ -148,11 +154,11 @@ envelopeTypeTable =
   , ("VrfSigningKey_PraosVRF", ty @(SigningKey VrfKey))
   , -- Leios
 
-    ( "BlsVerificationKey_bls12-381-BLS-Signature-Mininimal-Signature-Size"
+    ( "BlsVerificationKey_bls12-381-BLS-Signature-Minimal-Signature-Size"
     , ty @(VerificationKey BlsKey)
     )
-  , ("BlsSigningKey_bls12-381-BLS-Signature-Mininimal-Signature-Size", ty @(SigningKey BlsKey))
-  , ("BlsPossessionProof_bls12-381-BLS-Signature-Mininimal-Signature-Size", ty @BlsPossessionProof)
+  , ("BlsSigningKey_bls12-381-BLS-Signature-Minimal-Signature-Size", ty @(SigningKey BlsKey))
+  , ("BlsPossessionProof_bls12-381-BLS-Signature-Minimal-Signature-Size", ty @BlsPossessionProof)
   , -- Byron
     ("PaymentVerificationKeyByron_ed25519_bip32", ty @(VerificationKey ByronKey))
   , ("PaymentSigningKeyByron_ed25519_bip32", ty @(SigningKey ByronKey))
@@ -171,8 +177,7 @@ ty = textEnvelopeType (asType @a)
 --
 
 -- | A type that accepts two envelope @type@ strings, to exercise the mechanism
--- that no shipped instance needs yet: every instance of the catalogue above
--- still accepts exactly the one string it writes.
+-- on its own, apart from the catalogue above.
 newtype Legacy = Legacy Word8
   deriving stock (Eq, Show)
   deriving newtype (ToCBOR, FromCBOR)
@@ -217,6 +222,43 @@ envelopeAcceptanceTests =
 
   decode :: TextEnvelope -> Either TextEnvelopeError Legacy
   decode = deserialiseFromTextEnvelope
+
+--
+-- BLS keys
+--
+
+-- | The BLS envelope types were first written with the algorithm name of
+-- @cardano-crypto-class@ 2.6.0.0, which spells it @Mininimal@. Files with that
+-- spelling must still be read.
+blsOlderSpellingTests :: TestTree
+blsOlderSpellingTests =
+  testGroup
+    "BLS envelope types with the older spelling"
+    [ testCase "verification key" $
+        readsOlderSpelling
+          "BlsVerificationKey_bls12-381-BLS-Signature-Mininimal-Signature-Size"
+          (getVerificationKey sk)
+    , testCase "signing key" $
+        readsOlderSpelling "BlsSigningKey_bls12-381-BLS-Signature-Mininimal-Signature-Size" sk
+    , testCase "possession proof" $
+        readsOlderSpelling
+          "BlsPossessionProof_bls12-381-BLS-Signature-Mininimal-Signature-Size"
+          (createBlsPossessionProof sk)
+    ]
+ where
+  seedSize = fromIntegral (deterministicSigningKeySeedSize AsBlsKey)
+  sk = deterministicSigningKey AsBlsKey (mkSeedFromBytes (BS.replicate seedSize 42))
+
+-- | Write the value into a text envelope, give the envelope the older @type@
+-- string, and read it back. The comparison is on the serialised bytes because
+-- not every BLS type has an 'Eq' instance.
+readsOlderSpelling :: forall a. HasTextEnvelope a => String -> a -> Assertion
+readsOlderSpelling olderType a =
+  case deserialiseFromTextEnvelope envelope{teType = TextEnvelopeType olderType} of
+    Left err -> assertFailure ("could not read the older spelling: " <> show err)
+    Right a' -> assertEqual "reserialised bytes" (serialiseToCBOR a) (serialiseToCBOR (a' :: a))
+ where
+  envelope = serialiseToTextEnvelope Nothing a
 
 --
 -- Error rendering
