@@ -148,11 +148,11 @@ envelopeTypeTable =
   , ("VrfSigningKey_PraosVRF", ty @(SigningKey VrfKey))
   , -- Leios
 
-    ( "BlsVerificationKey_bls12-381-BLS-Signature-Mininimal-Signature-Size"
+    ( "BlsVerificationKey_bls12-381-BLS-Signature-Minimal-Signature-Size"
     , ty @(VerificationKey BlsKey)
     )
-  , ("BlsSigningKey_bls12-381-BLS-Signature-Mininimal-Signature-Size", ty @(SigningKey BlsKey))
-  , ("BlsPossessionProof_bls12-381-BLS-Signature-Mininimal-Signature-Size", ty @BlsPossessionProof)
+  , ("BlsSigningKey_bls12-381-BLS-Signature-Minimal-Signature-Size", ty @(SigningKey BlsKey))
+  , ("BlsPossessionProof_bls12-381-BLS-Signature-Minimal-Signature-Size", ty @BlsPossessionProof)
   , -- Byron
     ("PaymentVerificationKeyByron_ed25519_bip32", ty @(VerificationKey ByronKey))
   , ("PaymentSigningKeyByron_ed25519_bip32", ty @(SigningKey ByronKey))

@@ -43,7 +43,6 @@ import Cardano.Ledger.Hashes (HASH)
 import Data.ByteString (ByteString)
 import Data.Either.Combinators (maybeToRight)
 import Data.List.NonEmpty (NonEmpty)
-import Data.String (IsString (..))
 import Prettyprinter (Pretty (..), (<+>))
 
 -- | BLS keys. To participate in the Leios protocol as voting member/block producing node, stake pool operators must
@@ -137,12 +136,7 @@ instance SerialiseAsRawBytes (Hash BlsKey) where
 instance HasTextEnvelope (VerificationKey BlsKey) where
   textEnvelopeTypes :: AsType (VerificationKey BlsKey) -> NonEmpty TextEnvelopeType
   textEnvelopeTypes _ =
-    pure $
-      "BlsVerificationKey_"
-        <> fromString (Crypto.algorithmNameDSIGN proxy)
-   where
-    proxy :: Proxy Crypto.BLS12381MinSigDSIGN
-    proxy = Proxy
+    pure "BlsVerificationKey_bls12-381-BLS-Signature-Minimal-Signature-Size"
 
   textEnvelopeDefaultDescr :: VerificationKey BlsKey -> TextEnvelopeDescr
   textEnvelopeDefaultDescr _ = "BLS12-381 verification key"
@@ -150,12 +144,7 @@ instance HasTextEnvelope (VerificationKey BlsKey) where
 instance HasTextEnvelope (SigningKey BlsKey) where
   textEnvelopeTypes :: AsType (SigningKey BlsKey) -> NonEmpty TextEnvelopeType
   textEnvelopeTypes _ =
-    pure $
-      "BlsSigningKey_"
-        <> fromString (Crypto.algorithmNameDSIGN proxy)
-   where
-    proxy :: Proxy Crypto.BLS12381MinSigDSIGN
-    proxy = Proxy
+    pure "BlsSigningKey_bls12-381-BLS-Signature-Minimal-Signature-Size"
 
   textEnvelopeDefaultDescr :: SigningKey BlsKey -> TextEnvelopeDescr
   textEnvelopeDefaultDescr _ = "BLS12-381 signing key"
@@ -211,12 +200,7 @@ instance HasTypeProxy BlsPossessionProof where
 instance HasTextEnvelope BlsPossessionProof where
   textEnvelopeTypes :: AsType BlsPossessionProof -> NonEmpty TextEnvelopeType
   textEnvelopeTypes _ =
-    pure $
-      "BlsPossessionProof_"
-        <> fromString (Crypto.algorithmNameDSIGN proxy)
-   where
-    proxy :: Proxy Crypto.BLS12381MinSigDSIGN
-    proxy = Proxy
+    pure "BlsPossessionProof_bls12-381-BLS-Signature-Minimal-Signature-Size"
 
   textEnvelopeDefaultDescr :: BlsPossessionProof -> TextEnvelopeDescr
   textEnvelopeDefaultDescr _ = "BLS12-381 possession proof"
